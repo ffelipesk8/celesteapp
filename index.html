@@ -362,7 +362,7 @@ async function getAIReading(){
     : `You are an expert astrologer with 30 years of experience. Give a COMPLETE and deep reading for ${name} with Sun in Gemini, Moon in Scorpio, Ascendant in Cancer, Mars in Aries, Venus in Taurus, Jupiter in Capricorn. Write at least 600 words divided into these 6 sections with their titles:\n\n1. YOUR ESSENCE (Sun in Gemini)\n2. YOUR EMOTIONAL WORLD (Moon in Scorpio)\n3. HOW OTHERS SEE YOU (Ascendant in Cancer)\n4. LOVE & RELATIONSHIPS (Venus in Taurus)\n5. ENERGY & ACTION (Mars in Aries)\n6. YOUR ADVICE FOR THIS YEAR (Jupiter in Capricorn)\n\nMystical, empathetic and revealing tone. Speak directly to ${name}.`;
 
   try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:esDemo ? promptLargo : promptCorto}]})});
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:3000,messages:[{role:"user",content:esDemo ? promptLargo : promptCorto}]})});
     const data=await res.json();
     const text=data.content?.[0]?.text||t.fallback;
     if(esDemo){
