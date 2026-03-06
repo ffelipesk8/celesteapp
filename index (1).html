@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Celeste — Tu Carta Astral con IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0612;--deep: #100820;--gold: #c9a84c;--gold-light: #e8c96d;
+    --rose: #c4637a;--azure: #5b8fd4;--cream: #f5f0e8;--text: #d4cfc7;--muted: #7a7468;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--ink);color:var(--text);font-family:'Raleway',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;cursor:none;}
+  .cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.15s ease;mix-blend-mode:difference;}
+  .cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,168,76,0.4);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.3s ease;}
+  .stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 50%,rgba(91,143,212,0.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(196,99,122,0.06) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(201,168,76,0.05) 0%,transparent 50%);}
+  .stars::before{content:'';position:absolute;inset:0;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,0.9) 0%,transparent 100%),radial-gradient(1px 1px at 25% 40%,rgba(255,255,255,0.7) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 40% 8%,rgba(255,255,255,0.8) 0%,transparent 100%),radial-gradient(1px 1px at 55% 60%,rgba(255,255,255,0.6) 0%,transparent 100%),radial-gradient(1px 1px at 70% 25%,rgba(255,255,255,0.9) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 85% 70%,rgba(255,255,255,0.7) 0%,transparent 100%),radial-gradient(1px 1px at 15% 80%,rgba(255,255,255,0.8) 0%,transparent 100%),radial-gradient(1px 1px at 90% 10%,rgba(255,255,255,0.6) 0%,transparent 100%),radial-gradient(1px 1px at 60% 90%,rgba(255,255,255,0.7) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 35% 55%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 75% 45%,rgba(255,255,255,0.8) 0%,transparent 100%),radial-gradient(1px 1px at 48% 30%,rgba(201,168,76,0.9) 0%,transparent 100%),radial-gradient(1px 1px at 22% 65%,rgba(196,99,122,0.8) 0%,transparent 100%),radial-gradient(1px 1px at 78% 55%,rgba(91,143,212,0.8) 0%,transparent 100%);}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 4rem;background:linear-gradient(to bottom,rgba(10,6,18,0.9) 0%,transparent 100%);backdrop-filter:blur(4px);}
+  .logo{font-family:'Cinzel',serif;font-size:1.4rem;letter-spacing:0.3em;color:var(--gold);text-decoration:none;}
+  .logo span{color:var(--cream);opacity:0.6;font-size:0.65rem;display:block;letter-spacing:0.5em;margin-top:-2px;}
+  .nav-links{display:flex;gap:2.5rem;align-items:center;}
+  .nav-links a{color:var(--muted);font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;text-decoration:none;transition:color 0.3s;}
+  .nav-links a:hover{color:var(--gold);}
+  .lang-toggle{display:flex;gap:0.5rem;align-items:center;background:rgba(255,255,255,0.04);border:1px solid rgba(201,168,76,0.2);border-radius:20px;padding:4px;}
+  .lang-btn{background:none;border:none;color:var(--muted);font-family:'Raleway',sans-serif;font-size:0.7rem;letter-spacing:0.1em;padding:4px 10px;border-radius:16px;cursor:pointer;transition:all 0.3s;}
+  .lang-btn.active{background:var(--gold);color:var(--ink);font-weight:500;}
+  .hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 4rem;}
+  .hero-eyebrow{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.5em;color:var(--gold);opacity:0.8;text-transform:uppercase;margin-bottom:2rem;animation:fadeUp 1s ease both;}
+  .hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3.5rem,8vw,7rem);font-weight:300;line-height:1.05;color:var(--cream);margin-bottom:1.5rem;animation:fadeUp 1s 0.2s ease both;}
+  .hero h1 em{color:var(--gold);font-style:italic;}
+  .hero p{font-size:1rem;line-height:1.8;color:var(--muted);max-width:480px;margin:0 auto 3rem;animation:fadeUp 1s 0.4s ease both;}
+  .cta-group{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;animation:fadeUp 1s 0.6s ease both;}
+  .btn-primary{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-light) 100%);color:var(--ink);border:none;font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;padding:1rem 2.5rem;border-radius:2px;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-block;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,168,76,0.3);}
+  .btn-ghost{background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.3);font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;padding:1rem 2.5rem;border-radius:2px;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-block;}
+  .btn-ghost:hover{border-color:var(--gold);background:rgba(201,168,76,0.05);}
+  .divider{display:flex;align-items:center;gap:1.5rem;margin:1.5rem 0;opacity:0.3;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,var(--gold));}
+  .divider::after{background:linear-gradient(to left,transparent,var(--gold));}
+  .divider span{font-size:0.8rem;color:var(--gold);}
+  .form-section{position:relative;z-index:1;padding:6rem 2rem;display:flex;align-items:flex-start;justify-content:center;gap:4rem;flex-wrap:wrap;max-width:1100px;margin:0 auto;}
+  .form-card{background:linear-gradient(135deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);border:1px solid rgba(201,168,76,0.15);border-radius:4px;padding:3rem;flex:1;min-width:320px;max-width:480px;backdrop-filter:blur(10px);position:relative;overflow:hidden;}
+  .form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+  .form-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--cream);margin-bottom:0.5rem;}
+  .form-subtitle{font-size:0.75rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:2rem;}
+  .field{margin-bottom:1.5rem;}
+  .field label{display:block;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:0.5rem;}
+  .field input,.field select{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.15);border-radius:2px;padding:0.8rem 1rem;color:var(--cream);font-family:'Raleway',sans-serif;font-size:0.9rem;font-weight:300;transition:border-color 0.3s;-webkit-appearance:none;appearance:none;}
+  .field input:focus,.field select:focus{outline:none;border-color:rgba(201,168,76,0.5);background:rgba(201,168,76,0.03);}
+  .field input::placeholder{color:var(--muted);}
+  .field select option{background:var(--deep);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  .form-submit{width:100%;padding:1rem;background:linear-gradient(135deg,var(--gold) 0%,var(--gold-light) 100%);border:none;border-radius:2px;font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.2em;color:var(--ink);cursor:pointer;transition:all 0.3s;text-transform:uppercase;margin-top:0.5rem;}
+  .form-submit:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(201,168,76,0.25);}
+  .pricing-stack{display:flex;flex-direction:column;gap:1rem;flex:1;min-width:280px;max-width:360px;}
+  .price-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:2rem;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;}
+  .price-card:hover,.price-card.featured{border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.04);}
+  .price-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+  .price-badge{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.3em;text-transform:uppercase;background:var(--gold);color:var(--ink);padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:1rem;}
+  .price-amount{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--cream);line-height:1;}
+  .price-amount sup{font-size:1.2rem;vertical-align:top;margin-top:0.5rem;}
+  .price-period{font-size:0.7rem;color:var(--muted);letter-spacing:0.15em;margin-top:0.25rem;margin-bottom:1.25rem;}
+  .price-features{list-style:none;display:flex;flex-direction:column;gap:0.6rem;}
+  .price-features li{font-size:0.8rem;color:var(--text);display:flex;align-items:center;gap:0.5rem;}
+  .price-features li::before{content:'✦';color:var(--gold);font-size:0.6rem;}
+  .price-select{width:100%;margin-top:1.5rem;padding:0.7rem;border:1px solid rgba(201,168,76,0.3);background:transparent;color:var(--gold);font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;border-radius:2px;cursor:pointer;transition:all 0.3s;}
+  .price-select:hover{background:rgba(201,168,76,0.08);}
+  .price-card.featured .price-select{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+  .reading-section{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:4rem 2rem 8rem;}
+  .section-label{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.5em;color:var(--gold);opacity:0.6;text-transform:uppercase;text-align:center;margin-bottom:1rem;}
+  .section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:300;color:var(--cream);text-align:center;margin-bottom:1rem;}
+  .section-title em{color:var(--gold);font-style:italic;}
+  .reading-card{background:linear-gradient(135deg,rgba(255,255,255,0.03) 0%,rgba(255,255,255,0.01) 100%);border:1px solid rgba(201,168,76,0.12);border-radius:4px;padding:3rem;margin-top:3rem;position:relative;overflow:hidden;}
+  .reading-card::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,var(--ink) 100%);pointer-events:none;}
+  .reading-header{display:flex;align-items:center;gap:2rem;margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid rgba(201,168,76,0.1);}
+  .chart-mini{width:80px;height:80px;flex-shrink:0;}
+  .reading-meta h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--cream);margin-bottom:0.25rem;}
+  .reading-meta p{font-size:0.75rem;color:var(--muted);letter-spacing:0.1em;}
+  .planets-row{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem;}
+  .planet-tag{font-size:0.65rem;letter-spacing:0.1em;color:var(--gold);border:1px solid rgba(201,168,76,0.25);padding:3px 10px;border-radius:20px;}
+  .reading-body p{font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.9;color:rgba(212,207,199,0.85);font-weight:300;font-style:italic;margin-bottom:1rem;}
+  .reading-unlock{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);z-index:10;text-align:center;width:100%;}
+  .reading-unlock p{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}
+  .testimonials{position:relative;z-index:1;padding:4rem 2rem;text-align:center;}
+  .testimonial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:900px;margin:3rem auto 0;}
+  .testimonial{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:4px;padding:2rem;text-align:left;}
+  .testimonial-stars{color:var(--gold);font-size:0.7rem;margin-bottom:1rem;letter-spacing:0.2em;}
+  .testimonial p{font-family:'Cormorant Garamond',serif;font-size:1rem;line-height:1.7;color:var(--text);font-style:italic;margin-bottom:1.25rem;}
+  .testimonial-author{font-size:0.7rem;color:var(--muted);letter-spacing:0.15em;}
+  footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,0.05);padding:3rem 4rem;text-align:center;}
+  footer p{font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;}
+  .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(10,6,18,0.95);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:2rem;opacity:0;pointer-events:none;transition:opacity 0.4s;}
+  .modal-overlay.active{opacity:1;pointer-events:all;}
+  .modal{background:linear-gradient(135deg,rgba(20,12,35,0.99) 0%,rgba(16,8,32,0.99) 100%);border:1px solid rgba(201,168,76,0.2);border-radius:4px;padding:3rem;max-width:560px;width:100%;position:relative;transform:translateY(20px);transition:transform 0.4s;max-height:90vh;overflow-y:auto;}
+  .modal-overlay.active .modal{transform:translateY(0);}
+  .modal-close{position:absolute;top:1.5rem;right:1.5rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;transition:color 0.3s;}
+  .modal-close:hover{color:var(--gold);}
+  .modal-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--cream);margin-bottom:0.5rem;}
+  .modal-sub{font-size:0.75rem;color:var(--muted);margin-bottom:2rem;letter-spacing:0.1em;}
+  .reading-result{display:none;flex-direction:column;gap:1.5rem;}
+  .reading-result.show{display:flex;}
+  .planet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1rem;}
+  .planet-item{background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.12);border-radius:3px;padding:0.75rem;text-align:center;}
+  .planet-item .symbol{font-size:1.3rem;margin-bottom:0.25rem;}
+  .planet-item .name{font-size:0.6rem;color:var(--muted);letter-spacing:0.15em;display:block;}
+  .planet-item .sign{font-size:0.75rem;color:var(--gold);}
+  .loading-state{display:flex;flex-direction:column;align-items:center;gap:1.5rem;padding:2rem;}
+  .loading-text{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--muted);font-style:italic;}
+  .ai-reading{background:rgba(255,255,255,0.02);border:1px solid rgba(201,168,76,0.1);border-radius:3px;padding:1.75rem;}
+  .ai-reading-label{font-size:0.6rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem;opacity:0.7;}
+  .ai-reading p{font-family:'Cormorant Garamond',serif;font-size:1.05rem;line-height:1.85;color:var(--text);font-style:italic;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes twinkle{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  .twinkling{animation:twinkle 3s ease-in-out infinite;}
+  .loading-wheel{width:60px;height:60px;border:2px solid rgba(201,168,76,0.1);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+  @media(max-width:768px){nav{padding:1.2rem 1.5rem;}.nav-links{display:none;}.form-section{flex-direction:column;}.field-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="stars"></div>
+
+<nav>
+  <a href="#" class="logo">CELESTE<span>CARTA ASTRAL CON IA</span></a>
+  <div class="nav-links">
+    <a href="#" id="nav-carta">Carta Astral</a>
+    <a href="#" id="nav-precios">Precios</a>
+    <a href="#" id="nav-como">Cómo Funciona</a>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('es')">ES</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <p class="hero-eyebrow" id="eyebrow">✦ Astrología Generada por Inteligencia Artificial ✦</p>
+  <h1 id="hero-title">El cosmos <em>te habla</em>,<br>nosotros te lo revelamos</h1>
+  <p id="hero-sub">Tu carta astral interpretada con inteligencia artificial. Lecturas profundas, personalizadas, disponibles para todo el mundo.</p>
+  <div class="cta-group">
+    <button class="btn-primary" onclick="openModal()" id="cta-main">Revelar mi carta — $5 USD</button>
+    <button class="btn-ghost" onclick="scrollToPricing()" id="cta-sub">Ver suscripción $50/mes</button>
+  </div>
+</section>
+
+<div style="position:relative;z-index:1;"><div class="divider" style="max-width:900px;margin:0 auto;padding:0 2rem;"><span>✦</span></div></div>
+
+<section class="form-section" id="precios">
+  <div class="form-card">
+    <h2 class="form-title" id="form-title">Tu Carta Astral</h2>
+    <p class="form-subtitle" id="form-sub">Ingresa tus datos de nacimiento para comenzar</p>
+    <div class="field"><label id="lbl-name">Nombre</label><input type="text" id="inp-name" placeholder="Tu nombre"/></div>
+    <div class="field-row">
+      <div class="field"><label id="lbl-date">Fecha de nacimiento</label><input type="date" id="inp-date"/></div>
+      <div class="field"><label id="lbl-time">Hora de nacimiento</label><input type="time" id="inp-time"/></div>
+    </div>
+    <div class="field"><label id="lbl-place">Lugar de nacimiento</label><input type="text" id="inp-place" placeholder="Ciudad, País"/></div>
+    <div class="field"><label id="lbl-lang-pref">Idioma de lectura</label>
+      <select id="inp-lang"><option value="es">Español</option><option value="en">English</option></select>
+    </div>
+    <button class="form-submit" onclick="openModal()" id="btn-submit">✦ Generar mi Carta Astral</button>
+  </div>
+
+  <div class="pricing-stack">
+    <div class="price-card">
+      <div class="price-amount"><sup>$</sup>5</div>
+      <p class="price-period" id="p-once">Lectura única</p>
+      <ul class="price-features">
+        <li id="f1a">Carta astral completa con IA</li>
+        <li id="f1b">Sol, Luna y Ascendente</li>
+        <li id="f1c">Todos los planetas y casas</li>
+        <li id="f1d">Lectura personalizada en PDF</li>
+      </ul>
+      <button class="price-select" onclick="openModal()" id="btn-once">Comenzar →</button>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge" id="badge-popular">MÁS POPULAR</div>
+      <div class="price-amount"><sup>$</sup>50</div>
+      <p class="price-period" id="p-mes">por mes — lecturas ilimitadas</p>
+      <ul class="price-features">
+        <li id="f2a">Todo lo del plan básico</li>
+        <li id="f2b">Lectura diaria personalizada</li>
+        <li id="f2c">Tránsitos planetarios del día</li>
+        <li id="f2d">Compatibilidad con otras personas</li>
+        <li id="f2e">Email diario con tu horóscopo</li>
+      </ul>
+      <button class="price-select" onclick="openModal()" id="btn-mes">Suscribirme →</button>
+    </div>
+  </div>
+</section>
+
+<section class="reading-section" id="como">
+  <p class="section-label">Ejemplo de Lectura</p>
+  <h2 class="section-title" id="reading-title">Así luce una <em>lectura real</em></h2>
+  <p style="text-align:center;color:var(--muted);font-size:0.85rem;max-width:500px;margin:0 auto;" id="reading-desc">Una pequeña muestra de lo que la inteligencia artificial revela sobre tu carta natal</p>
+  <div class="reading-card">
+    <div class="reading-header">
+      <svg class="chart-mini" viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="38" stroke="rgba(201,168,76,0.3)" stroke-width="0.5"/>
+        <circle cx="40" cy="40" r="28" stroke="rgba(201,168,76,0.15)" stroke-width="0.5"/>
+        <circle cx="40" cy="40" r="18" stroke="rgba(201,168,76,0.1)" stroke-width="0.5"/>
+        <line x1="40" y1="2" x2="72" y2="62" stroke="rgba(196,99,122,0.4)" stroke-width="0.5"/>
+        <line x1="72" y1="62" x2="8" y2="62" stroke="rgba(91,143,212,0.4)" stroke-width="0.5"/>
+        <line x1="8" y1="62" x2="40" y2="2" stroke="rgba(201,168,76,0.4)" stroke-width="0.5"/>
+        <circle cx="40" cy="2" r="2.5" fill="#c9a84c"/>
+        <circle cx="72" cy="62" r="2" fill="#c4637a"/>
+        <circle cx="8" cy="62" r="2" fill="#5b8fd4"/>
+        <circle cx="58" cy="15" r="1.5" fill="rgba(201,168,76,0.6)"/>
+        <circle cx="25" cy="18" r="1.5" fill="rgba(196,99,122,0.6)"/>
+      </svg>
+      <div class="reading-meta">
+        <h3>Sofia Martínez</h3>
+        <p>15 de marzo, 1992 — 14:30 — Buenos Aires, Argentina</p>
+        <div class="planets-row">
+          <span class="planet-tag">☀ Sol en Piscis</span>
+          <span class="planet-tag">☽ Luna en Escorpio</span>
+          <span class="planet-tag">↑ Asc. Cáncer</span>
+        </div>
+      </div>
+    </div>
+    <div class="reading-body">
+      <p>"La danza entre tu Sol pisciano y tu Luna en Escorpio crea una de las combinaciones más magnéticas y complejas del zodiaco. Eres el tipo de persona que siente antes de pensar, que percibe las intenciones ajenas con una claridad casi sobrenatural. Hay en ti un océano emocional que muy pocos llegan a comprender en su totalidad...</p>
+      <p>Tu Ascendente en Cáncer actúa como la puerta que el mundo ve antes de conocerte de verdad — proyectas calidez, intuición maternal y una sensibilidad casi artística. Pero detrás de esa fachada acogedora, la profundidad escorpiana de tu Luna guarda secretos, cicatrices transformadas en sabiduría...</p>
+      <p>Saturno en tu Casa 7 habla de relaciones que llegan como maestros disfrazados de amantes. No es el planeta de las restricciones por crueldad, sino por precisión — te pide que elijas con..."</p>
+    </div>
+    <div class="reading-unlock">
+      <p id="unlock-text">Desbloquea tu lectura completa de 800 palabras</p>
+      <button class="btn-primary" onclick="openModal()" id="unlock-btn">Obtener mi lectura — $5 USD</button>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <p class="section-label">Testimonios</p>
+  <h2 class="section-title" id="test-title">Lo que dicen <em>las estrellas</em><br>sobre nosotros</h2>
+  <div class="testimonial-grid">
+    <div class="testimonial"><div class="testimonial-stars">★★★★★</div><p>"Nunca había leído algo tan preciso sobre mi carta. La IA capturó aspectos que ni yo sabía de mí mismo. La lectura de mi Luna en Capricornio fue escalofriante de exacta."</p><div class="testimonial-author">ANDRÉS V. — BOGOTÁ, COLOMBIA</div></div>
+    <div class="testimonial"><div class="testimonial-stars">★★★★★</div><p>"I switched to the English version and the reading was equally profound. The daily subscription is worth every penny — I start my morning with my astrological forecast."</p><div class="testimonial-author">SARAH K. — LONDON, UK</div></div>
+    <div class="testimonial"><div class="testimonial-stars">★★★★★</div><p>"La carta de compatibilidad con mi pareja nos ayudó a entender dinámicas que llevábamos años intentando explicar. Una herramienta realmente poderosa."</p><div class="testimonial-author">VALENTINA M. — CIUDAD DE MÉXICO</div></div>
+  </div>
+</section>
+
+<footer>
+  <p class="logo" style="display:inline-block;margin-bottom:1rem;">CELESTE</p><br>
+  <p>© 2025 Celeste · Lecturas astrológicas con IA · Disponible en Español &amp; English</p>
+  <p style="margin-top:0.5rem;font-size:0.65rem;">Las lecturas son para entretenimiento y desarrollo personal. No sustituyen consejo profesional.</p>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="loading-state" id="loading">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="55" stroke="rgba(201,168,76,0.1)" stroke-width="1" fill="none"/>
+        <circle cx="60" cy="60" r="40" stroke="rgba(201,168,76,0.07)" stroke-width="1" fill="none"/>
+        <circle cx="60" cy="5" r="4" fill="#c9a84c" class="twinkling"/>
+        <circle cx="107" cy="82" r="3" fill="#c4637a" class="twinkling" style="animation-delay:0.5s"/>
+        <circle cx="13" cy="82" r="3" fill="#5b8fd4" class="twinkling" style="animation-delay:1s"/>
+        <line x1="60" y1="5" x2="107" y2="82" stroke="rgba(201,168,76,0.2)" stroke-width="0.5"/>
+        <line x1="107" y1="82" x2="13" y2="82" stroke="rgba(91,143,212,0.2)" stroke-width="0.5"/>
+        <line x1="13" y1="82" x2="60" y2="5" stroke="rgba(196,99,122,0.2)" stroke-width="0.5"/>
+      </svg>
+      <div class="loading-wheel"></div>
+      <p class="loading-text" id="loading-text">Calculando posiciones planetarias...</p>
+    </div>
+    <div class="reading-result" id="result">
+      <div><h2 class="modal-title" id="result-title">Tu Carta Natal</h2><p class="modal-sub" id="result-sub">Lectura generada por inteligencia artificial</p></div>
+      <div class="planet-grid">
+        <div class="planet-item"><div class="symbol">☀</div><span class="name">SOL</span><span class="sign" id="p-sun">—</span></div>
+        <div class="planet-item"><div class="symbol">☽</div><span class="name">LUNA</span><span class="sign" id="p-moon">—</span></div>
+        <div class="planet-item"><div class="symbol">↑</div><span class="name">ASC.</span><span class="sign" id="p-asc">—</span></div>
+        <div class="planet-item"><div class="symbol">♂</div><span class="name">MARTE</span><span class="sign" id="p-mars">—</span></div>
+        <div class="planet-item"><div class="symbol">♀</div><span class="name">VENUS</span><span class="sign" id="p-venus">—</span></div>
+        <div class="planet-item"><div class="symbol">♃</div><span class="name">JÚPITER</span><span class="sign" id="p-jupiter">—</span></div>
+      </div>
+      <div class="ai-reading"><div class="ai-reading-label">✦ Lectura de IA</div><p id="ai-text">Calculando...</p></div>
+      <button class="btn-primary" style="width:100%;text-align:center;" id="pay-btn">Continuar al pago — $5 USD</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+document.addEventListener('mousemove',e=>{cursor.style.left=e.clientX-4+'px';cursor.style.top=e.clientY-4+'px';ring.style.left=e.clientX-16+'px';ring.style.top=e.clientY-16+'px';});
+
+const texts={
+  es:{eyebrow:'✦ Astrología Generada por Inteligencia Artificial ✦',heroTitle:'El cosmos <em>te habla</em>,<br>nosotros te lo revelamos',heroSub:'Tu carta astral interpretada con inteligencia artificial. Lecturas profundas, personalizadas, disponibles para todo el mundo.',ctaMain:'Revelar mi carta — $5 USD',ctaSub:'Ver suscripción $50/mes',formTitle:'Tu Carta Astral',formSub:'Ingresa tus datos de nacimiento para comenzar',lblName:'Nombre',lblDate:'Fecha de nacimiento',lblTime:'Hora de nacimiento',lblPlace:'Lugar de nacimiento',lblLang:'Idioma de lectura',btnSubmit:'✦ Generar mi Carta Astral',pOnce:'Lectura única',pMes:'por mes — lecturas ilimitadas',f1a:'Carta astral completa con IA',f1b:'Sol, Luna y Ascendente',f1c:'Todos los planetas y casas',f1d:'Lectura personalizada en PDF',f2a:'Todo lo del plan básico',f2b:'Lectura diaria personalizada',f2c:'Tránsitos planetarios del día',f2d:'Compatibilidad con otras personas',f2e:'Email diario con tu horóscopo',badgePopular:'MÁS POPULAR',btnOnce:'Comenzar →',btnMes:'Suscribirme →',readingTitle:'Así luce una <em>lectura real</em>',readingDesc:'Una pequeña muestra de lo que la inteligencia artificial revela sobre tu carta natal',unlockText:'Desbloquea tu lectura completa de 800 palabras',unlockBtn:'Obtener mi lectura — $5 USD',testTitle:'Lo que dicen <em>las estrellas</em><br>sobre nosotros',loadingText:'Calculando posiciones planetarias...',resultTitle:'Tu Carta Natal',resultSub:'Lectura generada por inteligencia artificial',payBtn:'Continuar al pago — $5 USD',navCarta:'Carta Astral',navPrecios:'Precios',navComo:'Cómo Funciona',signs:['Aries','Tauro','Géminis','Cáncer','Leo','Virgo','Libra','Escorpio','Sagitario','Capricornio','Acuario','Piscis'],prompt:(name)=>`Eres un astrólogo experto con 30 años de experiencia. Da una lectura profunda y evocadora (4-5 oraciones) para ${name} con Sol en Géminis, Luna en Escorpio, Ascendente en Cáncer, Marte en Aries, Venus en Tauro, Júpiter en Capricornio. Tono: místico, empático, revelador, personal. Solo el texto de la lectura, sin títulos ni explicaciones adicionales.`,fallback:'Tu Sol en Géminis y Luna en Escorpio crean una paradoja luminosa: buscas conexión desde la superficie mientras guardas profundidades que muy pocos alcanzan a comprender. Tu Ascendente en Cáncer te envuelve en una sensibilidad que actúa como escudo y como regalo al mismo tiempo. Este es un año de transformación silenciosa — Júpiter en Capricornio te pide que construyas desde la raíz, con paciencia y visión de largo aliento. Marte en Aries enciende tu determinación cuando más la necesitas.'},
+  en:{eyebrow:'✦ AI-Powered Astrology Readings ✦',heroTitle:'The cosmos <em>speaks to you</em>,<br>we translate it',heroSub:'Your birth chart interpreted by artificial intelligence. Deep, personalized readings available worldwide.',ctaMain:'Reveal my chart — $5 USD',ctaSub:'See $50/mo subscription',formTitle:'Your Birth Chart',formSub:'Enter your birth details to get started',lblName:'Name',lblDate:'Date of birth',lblTime:'Time of birth',lblPlace:'Place of birth',lblLang:'Reading language',btnSubmit:'✦ Generate my Birth Chart',pOnce:'One-time reading',pMes:'per month — unlimited readings',f1a:'Full AI birth chart reading',f1b:'Sun, Moon & Rising',f1c:'All planets & houses',f1d:'Personalized PDF reading',f2a:'Everything in basic plan',f2b:'Daily personalized reading',f2c:'Daily planetary transits',f2d:'Compatibility with others',f2e:'Daily horoscope email',badgePopular:'MOST POPULAR',btnOnce:'Get Started →',btnMes:'Subscribe →',readingTitle:'This is what a <em>real reading</em> looks like',readingDesc:'A small preview of what AI reveals about your natal chart',unlockText:'Unlock your complete 800-word reading',unlockBtn:'Get my reading — $5 USD',testTitle:'What <em>the stars</em> say<br>about us',loadingText:'Calculating planetary positions...',resultTitle:'Your Natal Chart',resultSub:'Reading generated by artificial intelligence',payBtn:'Continue to payment — $5 USD',navCarta:'Birth Chart',navPrecios:'Pricing',navComo:'How it Works',signs:['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'],prompt:(name)=>`You are an expert astrologer with 30 years of experience. Give a deep, evocative reading (4-5 sentences) for ${name} with Sun in Gemini, Moon in Scorpio, Ascendant in Cancer, Mars in Aries, Venus in Taurus, Jupiter in Capricorn. Tone: mystical, empathetic, revealing, personal. Only the reading text, no titles or additional explanations.`,fallback:'Your Sun in Gemini and Moon in Scorpio create a luminous paradox: you seek connection on the surface while guarding depths few can truly reach. Your Cancer Rising wraps you in a sensitivity that acts as both shield and gift to the world. This is a year of quiet transformation — Jupiter in Capricorn asks you to build from the root, with patience and long-range vision. Mars in Aries ignites your determination exactly when you need it most.'}
+};
+
+let lang='es';
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const t=texts[l];
+  document.getElementById('eyebrow').textContent=t.eyebrow;
+  document.getElementById('hero-title').innerHTML=t.heroTitle;
+  document.getElementById('hero-sub').textContent=t.heroSub;
+  document.getElementById('cta-main').textContent=t.ctaMain;
+  document.getElementById('cta-sub').textContent=t.ctaSub;
+  document.getElementById('form-title').textContent=t.formTitle;
+  document.getElementById('form-sub').textContent=t.formSub;
+  document.getElementById('lbl-name').textContent=t.lblName;
+  document.getElementById('lbl-date').textContent=t.lblDate;
+  document.getElementById('lbl-time').textContent=t.lblTime;
+  document.getElementById('lbl-place').textContent=t.lblPlace;
+  document.getElementById('lbl-lang-pref').textContent=t.lblLang;
+  document.getElementById('btn-submit').textContent=t.btnSubmit;
+  document.getElementById('p-once').textContent=t.pOnce;
+  document.getElementById('p-mes').textContent=t.pMes;
+  ['f1a','f1b','f1c','f1d','f2a','f2b','f2c','f2d','f2e'].forEach(id=>document.getElementById(id).textContent=t[id]);
+  document.getElementById('badge-popular').textContent=t.badgePopular;
+  document.getElementById('btn-once').textContent=t.btnOnce;
+  document.getElementById('btn-mes').textContent=t.btnMes;
+  document.getElementById('reading-title').innerHTML=t.readingTitle;
+  document.getElementById('reading-desc').textContent=t.readingDesc;
+  document.getElementById('unlock-text').textContent=t.unlockText;
+  document.getElementById('unlock-btn').textContent=t.unlockBtn;
+  document.getElementById('test-title').innerHTML=t.testTitle;
+  document.getElementById('nav-carta').textContent=t.navCarta;
+  document.getElementById('nav-precios').textContent=t.navPrecios;
+  document.getElementById('nav-como').textContent=t.navComo;
+}
+
+function scrollToPricing(){document.getElementById('precios').scrollIntoView({behavior:'smooth'});}
+
+function openModal(){
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('result').classList.remove('show');
+  const msgs=[texts[lang].loadingText,'Alineando los planetas...','Interpretando los aspectos...','Preparando tu lectura...'];
+  let i=0;
+  const el=document.getElementById('loading-text');
+  el.textContent=msgs[0];
+  const iv=setInterval(()=>{i=(i+1)%msgs.length;el.textContent=msgs[i];},1100);
+  setTimeout(()=>{clearInterval(iv);showChart();},3200);
+}
+
+function showChart(){
+  const t=texts[lang];
+  document.getElementById('p-sun').textContent=t.signs[2];
+  document.getElementById('p-moon').textContent=t.signs[7];
+  document.getElementById('p-asc').textContent=t.signs[3];
+  document.getElementById('p-mars').textContent=t.signs[0];
+  document.getElementById('p-venus').textContent=t.signs[1];
+  document.getElementById('p-jupiter').textContent=t.signs[9];
+  getAIReading();
+}
+
+async function getAIReading(){
+  const name=document.getElementById('inp-name').value||(lang==='es'?'viajero estelar':'star traveler');
+  const t=texts[lang];
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:t.prompt(name)}]})});
+    const data=await res.json();
+    const text=data.content?.[0]?.text||t.fallback;
+    showResult(text);
+  }catch(e){showResult(t.fallback);}
+}
+
+function showResult(text){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('ai-text').textContent=text;
+  document.getElementById('result-title').textContent=texts[lang].resultTitle;
+  document.getElementById('result-sub').textContent=texts[lang].resultSub;
+  document.getElementById('pay-btn').textContent=texts[lang].payBtn;
+  document.getElementById('result').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('active');}
+function closeModalOutside(e){if(e.target===document.getElementById('modal'))closeModal();}
+
+document.getElementById('nav-precios').addEventListener('click',e=>{e.preventDefault();scrollToPricing();});
+document.getElementById('nav-carta').addEventListener('click',e=>{e.preventDefault();openModal();});
+document.getElementById('nav-como').addEventListener('click',e=>{e.preventDefault();document.getElementById('como').scrollIntoView({behavior:'smooth'});});
+</script>
+<!-- WOMPI -->
+<script src="https://checkout.wompi.co/widget.js"></script>
+
+<!-- DEMO BANNER -->
+<div id="dmobanner" style="display:none;position:fixed;bottom:20px;right:20px;background:#c9a84c;color:#000;padding:12px 24px;border-radius:30px;font-weight:bold;font-size:15px;z-index:99999;font-family:Arial,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.5);">✦ MODO DEMO ACTIVO ✦</div>
+
+<script>
+// WOMPI PAGOS
+function pagarLectura(monto) {
+  var checkout = new WidgetCheckout({
+    currency: 'COP',
+    amountInCents: monto === 5 ? 2200000 : 22000000,
+    reference: 'celeste-' + Date.now(),
+    publicKey: 'pub_prod_qzLzboIpOymUN7b2BLCXpoFJOQVLDQMy',
+    redirectUrl: window.location.origin + window.location.pathname
+  });
+  checkout.open(function(result) {
+    if (result.transaction && result.transaction.status === 'APPROVED') {
+      alert('Pago exitoso! Tu lectura completa llegara a tu email. ');
+    }
+  });
+}
+
+// MODO DEMO - activa con ?demo=celeste2025
+(function() {
+  if (window.location.search.indexOf('demo=celeste2025') !== -1) {
+    // Mostrar banner
+    document.getElementById('dmobanner').style.display = 'block';
+    // Cambiar botones de pago a verde
+    function activar() {
+      var ids = ['pay-btn','btn-once','btn-mes','unlock-btn','cta-main','btn-submit'];
+      for (var i = 0; i < ids.length; i++) {
+        var btn = document.getElementById(ids[i]);
+        if (btn) {
+          btn.setAttribute('style','background:linear-gradient(135deg,#4caf82,#6dcf9e)!important;color:#000!important;border:none!important;cursor:pointer!important;');
+          btn.textContent = 'VER LECTURA COMPLETA (DEMO)';
+          btn.onclick = function(e){ e.preventDefault(); e.stopPropagation(); openModal(); return false; };
+        }
+      }
+    }
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      activar();
+    } else {
+      document.addEventListener('DOMContentLoaded', activar);
+    }
+    window.addEventListener('load', activar);
+  }
+})();
+</script>
+</body>
+</html>
