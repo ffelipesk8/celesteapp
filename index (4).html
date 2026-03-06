@@ -117,13 +117,8 @@
   .loading-wheel{width:60px;height:60px;border:2px solid rgba(201,168,76,0.1);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
   @media(max-width:768px){nav{padding:1.2rem 1.5rem;}.nav-links{display:none;}.form-section{flex-direction:column;}.field-row{grid-template-columns:1fr;}}
 </style>
-
-<!-- Wompi -->
-<script src="https://checkout.wompi.co/widget.js"></script>
 </head>
 <body>
-
-
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 <div class="stars"></div>
@@ -179,7 +174,7 @@
         <li id="f1c">Todos los planetas y casas</li>
         <li id="f1d">Lectura personalizada en PDF</li>
       </ul>
-      <button class="price-select" onclick="pagarLectura(5)" id="btn-once">Comenzar →</button>
+      <button class="price-select" onclick="openModal()" id="btn-once">Comenzar →</button>
     </div>
     <div class="price-card featured">
       <div class="price-badge" id="badge-popular">MÁS POPULAR</div>
@@ -192,7 +187,7 @@
         <li id="f2d">Compatibilidad con otras personas</li>
         <li id="f2e">Email diario con tu horóscopo</li>
       </ul>
-      <button class="price-select" onclick="pagarLectura(50)" id="btn-mes">Suscribirme →</button>
+      <button class="price-select" onclick="openModal()" id="btn-mes">Suscribirme →</button>
     </div>
   </div>
 </section>
@@ -233,7 +228,7 @@
     </div>
     <div class="reading-unlock">
       <p id="unlock-text">Desbloquea tu lectura completa de 800 palabras</p>
-      <button class="btn-primary" onclick="pagarLectura(5)" id="unlock-btn">Obtener mi lectura — $5 USD</button>
+      <button class="btn-primary" onclick="openModal()" id="unlock-btn">Obtener mi lectura — $5 USD</button>
     </div>
   </div>
 </section>
@@ -282,7 +277,7 @@
         <div class="planet-item"><div class="symbol">♃</div><span class="name">JÚPITER</span><span class="sign" id="p-jupiter">—</span></div>
       </div>
       <div class="ai-reading"><div class="ai-reading-label">✦ Lectura de IA</div><p id="ai-text">Calculando...</p></div>
-      <button class="btn-primary" style="width:100%;text-align:center;" id="pay-btn" onclick="pagarLectura(5)">Continuar al pago — $5 USD</button>
+      <button class="btn-primary" style="width:100%;text-align:center;" id="pay-btn">Continuar al pago — $5 USD</button>
     </div>
   </div>
 </div>
@@ -384,48 +379,44 @@ document.getElementById('nav-carta').addEventListener('click',e=>{e.preventDefau
 document.getElementById('nav-como').addEventListener('click',e=>{e.preventDefault();document.getElementById('como').scrollIntoView({behavior:'smooth'});});
 </script>
 
+<!-- Wompi -->
+<script src="https://checkout.wompi.co/widget.js"></script>
+
+<div id="dmobanner" style="display:none;position:fixed;bottom:20px;right:20px;background:#c9a84c;color:#0a0612;padding:10px 20px;border-radius:20px;font-weight:bold;font-size:14px;z-index:99999;font-family:Arial,sans-serif;">✦ MODO DEMO ACTIVO ✦</div>
+
 <script>
-function pagarLectura(monto, descripcion) {
+// WOMPI PAGOS
+function pagarLectura(monto) {
   var checkout = new WidgetCheckout({
     currency: 'COP',
-    amountInCents: monto === 5 ? 2200000 : 22000000, // $5 USD ~ $22.000 COP / $50 USD ~ $220.000 COP
+    amountInCents: monto === 5 ? 2200000 : 22000000,
     reference: 'celeste-' + Date.now(),
     publicKey: 'pub_prod_qzLzboIpOymUN7b2BLCXpoFJOQVLDQMy',
-    redirectUrl: window.location.href,
-    customerData: {
-      email: document.getElementById('inp-name').value ? '' : '',
-    },
-    taxInCents: {
-      vat: 0
-    }
+    redirectUrl: window.location.origin + window.location.pathname
   });
   checkout.open(function(result) {
-    var transaction = result.transaction;
-    if (transaction && transaction.status === 'APPROVED') {
-      mostrarConfirmacion();
+    if (result.transaction && result.transaction.status === 'APPROVED') {
+      alert('¡Pago exitoso! Tu lectura completa llegará a tu email. ✦');
     }
   });
 }
 
-function mostrarConfirmacion() {
-  closeModal();
-  const msg = lang === 'es' 
-    ? '¡Pago exitoso! Tu lectura completa llegará a tu email en minutos. ✦'
-    : '¡Payment successful! Your full reading will arrive by email shortly. ✦';
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:2rem;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#c9a84c,#e8c96d);color:#0a0612;padding:1rem 2rem;border-radius:4px;font-family:Cinzel,serif;font-size:0.8rem;letter-spacing:0.15em;z-index:9999;text-align:center;max-width:90vw;';
-  div.textContent = msg;
-  document.body.appendChild(div);
-  setTimeout(() => div.remove(), 6000);
-}
-
-
-</script>
-
-<div id="dmobanner" style="display:none;position:fixed;bottom:20px;right:20px;background:#c9a84c;color:#000;padding:10px 20px;border-radius:20px;font-weight:bold;font-size:14px;z-index:99999;">MODO DEMO ACTIVO</div>
-<script>
-if(location.search.indexOf('demo=celeste2025')>-1){
-  document.getElementById('dmobanner').style.display='block';
+// MODO DEMO
+var esDemo = window.location.search.indexOf('demo=celeste2025') !== -1;
+if (esDemo) {
+  document.getElementById('dmobanner').style.display = 'block';
+  window.addEventListener('load', function() {
+    var ids = ['pay-btn','btn-once','btn-mes','unlock-btn','cta-main','btn-submit'];
+    ids.forEach(function(id) {
+      var btn = document.getElementById(id);
+      if (btn) {
+        btn.style.cssText = 'background:linear-gradient(135deg,#4caf82,#6dcf9e)!important;color:#0a0612!important;border:none!important;';
+        btn.textContent = '✦ Ver lectura completa (Demo)';
+        btn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); openModal(); };
+      }
+    });
+  });
 }
 </script>
+</body>
 </html>
